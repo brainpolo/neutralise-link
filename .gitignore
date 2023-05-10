@@ -1,0 +1,11 @@
+# Virtual Environment
+venv/
+
+# OS Cache
+.DS_Store
+
+# Python Cache
+__pycache__/
+
+# Build Files
+dist/
