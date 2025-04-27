@@ -1,0 +1,21 @@
+version = 1
+
+exclude_patterns = []
+
+test_patterns = [
+    "tests/**",
+]
+
+[[analyzers]]
+name = "python"
+dependency_file_paths = ["requirements.txt"]
+enabled = true
+
+[[transformers]]
+name = "isort"
+enabled = true
+
+[[transformers]]
+name = "ruff"
+enabled = true
+

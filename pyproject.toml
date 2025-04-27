@@ -3,23 +3,35 @@ requires = [
     "hatchling",
     "certifi",
     "charset-normalizer",
-    "idna",
     "requests",
     "urllib3",
+    "idna"
 ]
+
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/neutralise_link"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+    "requirements.txt",
+    "tests/",
+    ".deepsource.toml",
+]
 
 [project]
 name = "neutralise_link"
-version = "0.0.1"
+version = "0.1.0"
 authors = [
-    { name="Aditya Dedhia", email="adityadedhia@hey.com" }
+    { name="Aditya Dedhia", email="aditya@brainpolo.com" }
 ]
 description="Validating, cleaning, and compactifying URLs simplified."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
  classifiers=[
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent",
 ]

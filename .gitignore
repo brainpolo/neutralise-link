@@ -7,5 +7,12 @@ venv/
 # Python Cache
 __pycache__/
 
+# Coverage
+.coverage
+htmlcov/
+
 # Build Files
 dist/
+
+# VS Code
+.VSCodeCounter/

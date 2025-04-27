@@ -6,12 +6,14 @@
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 
-import logging
+from urllib.parse import unquote
 
-logger = logging.getLogger("app")
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-formatter = logging.Formatter("[%(levelname)s]  %(asctime)s - %(message)s")
-ch.setFormatter(formatter)
-logger.addHandler(ch)
+
+# Decode percent-encoded ASCII characters that don't need encoding
+def selective_unquote(url):
+    parts = url.split('?', 1)
+    path = unquote(parts[0])
+    if len(parts) > 1:
+        # Keep query parameters encoded
+        return path + '?' + parts[1]
+    return path
