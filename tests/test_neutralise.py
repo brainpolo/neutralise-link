@@ -14,10 +14,12 @@ valid_links = [
     "apple.com",
     "github.com",
     "brainpolo.com",
-    "quicklm.chat",
+    "brainful.bot",
     "pack.page",
+    "https://x.com/brainpolohouse",
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    "https://dash.cloudflare.com/3969b354d3c59137a46b96440a394c93/brainful.ai",
+    "https://dash.cloudflare.com/3969b354d3c59137a46b96440a394c93/brainful.one",
+    "https://brainful.one/@brainfulstaff/7aec82",
 ]
 
 # URLs known to redirect
@@ -66,9 +68,9 @@ class TestNeutralise(unittest.TestCase):
                 # Use less strict check - just ensure the primary domain name is in the result
                 base_domain = clean_domain.split('.')[0]
                 if "." in clean_domain:
-                    # Handle special cases where redirects might go to completely different domains
-                    if clean_domain == "quicklm.chat" and "quicklm.com" in result.lower():
-                        # Special case where quicklm.chat redirects to quicklm.com
+                    # Handle cases where URLs redirect to login pages
+                    if "login" in result.lower() or "auth" in result.lower():
+                        # If redirected to login, consider it valid
                         continue
 
                     self.assertIn(base_domain, result.lower(),

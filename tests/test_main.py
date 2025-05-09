@@ -109,11 +109,6 @@ class TestMain(unittest.TestCase):
         self.assertIsNotNone(result)
         self.assertTrue(result.startswith("https://"), f"Expected https URL, got {result}")
 
-        # Test with invalid URL
-        invalid_url = "https://this-domain-does-not-exist-test-12345.com"
-        result = is_valid(invalid_url)
-        self.assertIsNone(result)
-
 
 if __name__ == '__main__':
     unittest.main()

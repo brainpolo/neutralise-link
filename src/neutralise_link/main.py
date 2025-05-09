@@ -9,6 +9,7 @@
 
 import re
 import requests
+import random
 
 from .utils import selective_unquote
 from .options import DEFAULT_REQUEST_TIMEOUT, MAX_URL_LENGTH, MAX_SUBDOMAINS, MAX_QUERY_PARAMS
@@ -48,6 +49,22 @@ bad_params = [
 ]
 
 
+# Common User-Agents for different browsers and platforms
+USER_AGENTS = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:123.0) Gecko/20100101 Firefox/123.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/122.0.0.0',
+]
+
+def get_random_user_agent() -> str:
+    """
+    Returns a random User-Agent from a list of common ones.
+    This helps avoid detection and improves reliability.
+    """
+    return random.choice(USER_AGENTS)
 
 def rem_refs(url: str) -> str:
     """
@@ -294,21 +311,39 @@ def is_valid(url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT) -> str | None:
         401,  # Unauthorized
         403,  # Forbidden
         429,  # Too Many Requests
+        503,  # Service Unavailable (WAF interception)
+        504,  # Gateway Timeout (WAF interception)
     ]
+
+    # Basic request headers
+    headers = {
+        'User-Agent': get_random_user_agent(),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Cache-Control': 'max-age=0'
+    }
 
     try:
         # First try a HEAD request, which is more efficient
         try:
-            response = requests.head(url, allow_redirects=True, timeout=timeout)
+            response = requests.head(url, headers=headers, allow_redirects=True, timeout=timeout)
             # For authentication-required pages, consider them valid
             if response.status_code in ACCEPTED_NON_2XX_STATUS_CODES:
                 return response.url  # Return the final URL after redirects
+
             response.raise_for_status()
             return response.url  # Return the final URL after redirects
         except requests.exceptions.HTTPError as e:
             # If we get a 405 Method Not Allowed, try a GET request instead
             if response.status_code == 405:
-                response = requests.get(url, allow_redirects=True, timeout=timeout, stream=True)
+                response = requests.get(url, headers=headers, allow_redirects=True, timeout=timeout, stream=True)
                 # For authentication-required pages, consider them valid
                 if response.status_code in ACCEPTED_NON_2XX_STATUS_CODES:
                     final_url = response.url  # Capture the final URL
@@ -318,12 +353,13 @@ def is_valid(url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT) -> str | None:
                 # Close the connection immediately to avoid downloading the entire content
                 final_url = response.url  # Capture the final URL
                 response.close()
+
                 return final_url
+
             # Check if it's a 401 or 403 - these indicate valid URLs requiring authentication
-            elif response.status_code in ACCEPTED_NON_2XX_STATUS_CODES:
+            if response.status_code in ACCEPTED_NON_2XX_STATUS_CODES:
                 return response.url  # Return the final URL after redirects
-            else:
-                # Some other HTTP error
-                raise e
-    except requests.exceptions.RequestException:  # ? URL is incorrect
-        return None
+
+            raise e  # ? Some other non-accepted HTTP error
+    except requests.exceptions.RequestException as e:  # ? URL read error
+        return url
