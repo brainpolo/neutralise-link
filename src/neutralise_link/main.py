@@ -59,12 +59,14 @@ USER_AGENTS = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/122.0.0.0',
 ]
 
+
 def get_random_user_agent() -> str:
     """
     Returns a random User-Agent from a list of common ones.
     This helps avoid detection and improves reliability.
     """
     return random.choice(USER_AGENTS)
+
 
 def rem_refs(url: str) -> str:
     """
@@ -361,5 +363,5 @@ def is_valid(url: str, timeout: int = DEFAULT_REQUEST_TIMEOUT) -> str | None:
                 return response.url  # Return the final URL after redirects
 
             raise e  # ? Some other non-accepted HTTP error
-    except requests.exceptions.RequestException as e:  # ? URL read error
+    except requests.exceptions.RequestException:  # ? URL read error
         return url
