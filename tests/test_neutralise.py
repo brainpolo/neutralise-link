@@ -1,13 +1,23 @@
 import unittest
 import sys
 import os
+import time
+import logging
+
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Add the parent directory to sys.path to access the package
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.neutralise_link import neutralise
 
-# Ensure that a wide basket of links are correctly handled
+# Ensure that a wide basket of links are correctly handled
 valid_links = [
     "https://google.com",
     "https://theuselessweb.com/",
@@ -37,7 +47,12 @@ class TestNeutralise(unittest.TestCase):
         """
         # Test with a real valid URL that has tracking parameters
         url = "https://example.com/?param=test&sourceid=chrome&utm_source=newsletter"
+
+        start_time = time.time()
         result = neutralise(url)
+        duration = time.time() - start_time
+
+        logger.info(f"Neutralized tracking URL in {duration:.3f} seconds: {url}")
 
         # The actual functions should clean the URL
         self.assertIn("https://example.com/?param=test", result)
@@ -50,7 +65,11 @@ class TestNeutralise(unittest.TestCase):
         """
         for link in valid_links:
             with self.subTest(link=link):
+                start_time = time.time()
                 result = neutralise(link)
+                duration = time.time() - start_time
+
+                logger.info(f"Neutralized URL in {duration:.3f} seconds: {link}")
 
                 # All results should be strings (not None)
                 self.assertIsNotNone(result, f"Failed to neutralise {link}")
@@ -83,7 +102,12 @@ class TestNeutralise(unittest.TestCase):
         # Test with a URL that redirects from HTTP to HTTPS
         if redirect_links:
             http_url = redirect_links[0]  # "http://google.com"
+
+            start_time = time.time()
             result = neutralise(http_url)
+            duration = time.time() - start_time
+
+            logger.info(f"Neutralized redirect URL in {duration:.3f} seconds: {http_url}")
 
             # When redirects are resolved, the URL should be different
             # from the original in some way (protocol, www, etc.)
@@ -93,7 +117,12 @@ class TestNeutralise(unittest.TestCase):
     def test_neutralise_malicious(self):
         # Test with actual malicious URL
         url = "https://example.com/?param=value&backfill=hack"
+
+        start_time = time.time()
         result = neutralise(url)
+        duration = time.time() - start_time
+
+        logger.info(f"Attempted to neutralize malicious URL in {duration:.3f} seconds: {url}")
 
         # The real is_mal function should detect this as malicious
         self.assertIsNone(result)
@@ -101,7 +130,12 @@ class TestNeutralise(unittest.TestCase):
     def test_neutralise_no_protocol(self):
         # Test URL without protocol
         url = "github.com"
+
+        start_time = time.time()
         result = neutralise(url)
+        duration = time.time() - start_time
+
+        logger.info(f"Neutralized URL without protocol in {duration:.3f} seconds: {url}")
 
         # Check that protocol was added and the domain is present
         # Allow for potential trailing slash variations

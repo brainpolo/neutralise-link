@@ -23,7 +23,7 @@ By default, the function will return `None` in two cases:
 
 > You may override the 2nd case by calling the function with the optional parameter, `safe=false`.
 
----
+> You may also skip the validity check by calling the function with the optional parameter, `check_valid=false`. This is recommended if you do not need to check for URL validity as it leads to significantly faster performance, but at the potential risk of returning impure URLs (i.e. URLs that have been redirected).
 
 ## Example Code
 
@@ -33,10 +33,10 @@ from neutralise_link import neutralise
 def main(url: str) -> str:
     """Validate user URL input for storing."""
 
-    url = neutralise(url=url, safe=True)
+    url = neutralise(url=url, safe=True, check_valid=True)
     if not url:
         print("URL is malformed or malicious.")
-    print("URL is safe.")
+    print("URL is safe and in its pure form.")
 ```
 
 ## Contributing
